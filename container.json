@@ -1,0 +1,9 @@
+{
+  "Image": "043330581411.dkr.ecr.eu-central-1.amazonaws.com/cartoonify-sdxl:latest",
+  "Mode": "SingleModel",
+  "Environment": {
+    "MODEL_ID": "stabilityai/stable-diffusion-xl-base-1.0",
+    "IP_ADAPTER_REPO": "h94/IP-Adapter",
+    "IP_ADAPTER_WEIGHT": "ip-adapter_sdxl.bin"
+  }
+}
