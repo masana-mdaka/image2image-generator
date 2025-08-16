@@ -26,4 +26,5 @@ VOLUME ["/opt/hf-cache"]
 
 # SageMaker expects 8080 and /ping + /invocations
 EXPOSE 8080
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8080"]
+COPY entrypoint.sh /usr/local/bin/entrypoint
+ENTRYPOINT ["/usr/local/bin/entrypoint"]
