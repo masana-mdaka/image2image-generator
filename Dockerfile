@@ -18,18 +18,21 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# Ensure EXACT Torch/TorchVision pair with CUDA 12.1
+# Torch 2.4.1 adds cuda.is_flash_attention_available; pair with cu121 wheels
 RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cu121 \
-    --force-reinstall 'torch==2.3.1' 'torchvision==0.18.1' 'torchaudio==2.3.1'
+    --force-reinstall 'torch==2.4.1' 'torchvision==0.19.1' 'torchaudio==2.4.1'
 
-# Fail-fast sanity check
+# Sanity check: NMS + flash-attention flag
 RUN python - <<'PY'
 import torch, torchvision
 print("torch", torch.__version__)
 print("torchvision", torchvision.__version__)
 from torchvision.ops import nms
 print("nms OK")
+import torch.backends.cuda as cb
+print("flash_attn_flag:", hasattr(cb, "is_flash_attention_available"))
 PY
+
 
 
 
