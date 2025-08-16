@@ -1,0 +1,7 @@
+.git
+__pycache__/
+*.ipynb
+*.jpg
+*.png
+*.pt
+*.safetensors

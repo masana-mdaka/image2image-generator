@@ -1,0 +1,18 @@
+# Server
+fastapi
+uvicorn[standard]
+
+# Core ML
+pillow
+diffusers==0.30.2
+transformers==4.43.3         # <-- pinned to work with diffusers 0.30.2
+accelerate
+safetensors
+xformers ; platform_system != "Windows"
+torchvision==0.18.1           # matches torch 2.3.1 in your base image
+numpy
+scipy
+huggingface-hub>=0.23.0
+
+# Optional
+boto3
