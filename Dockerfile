@@ -18,9 +18,11 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
-RUN pip uninstall -y torchvision || true \
- && pip install --index-url https://download.pytorch.org/whl/cu121 --no-deps torchvision==0.18.1
-# fail-fast sanity check
+# Ensure EXACT Torch/TorchVision pair with CUDA 12.1
+RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cu121 \
+    --force-reinstall 'torch==2.3.1' 'torchvision==0.18.1' 'torchaudio==2.3.1'
+
+# Fail-fast sanity check
 RUN python - <<'PY'
 import torch, torchvision
 print("torch", torch.__version__)
@@ -28,6 +30,7 @@ print("torchvision", torchvision.__version__)
 from torchvision.ops import nms
 print("nms OK")
 PY
+
 
 
 # 2) Copy code last (fast rebuilds on code changes)
