@@ -19,6 +19,12 @@ _pipe = None
 _pipe_lock = threading.Lock()
 _warm_started = False
 
+@app.on_event("startup")
+def _background_warm():
+    import threading
+    threading.Thread(target=lambda: get_pipe(), daemon=True).start()
+
+
 def get_pipe():
     global _pipe, _warm_started
     if _pipe is not None:
