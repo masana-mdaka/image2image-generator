@@ -22,6 +22,10 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cu121 \
     --force-reinstall 'torch==2.4.1' 'torchvision==0.19.1' 'torchaudio==2.4.1'
 
+# make sure xformers is not present (it’s optional and causing import errors)
+RUN pip uninstall -y xformers || true
+
+
 # Sanity check: NMS + flash-attention flag
 RUN python - <<'PY'
 import torch, torchvision
