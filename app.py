@@ -26,31 +26,46 @@ def get_pipe():
     with _pipe_lock:
         if _pipe is not None:
             return _pipe
-        # heavy imports here so /ping is fast
         from diffusers import StableDiffusionXLImg2ImgPipeline as SDXLImg2ImgPipeline
-        _pipe = SDXLImg2ImgPipeline.from_pretrained(MODEL_ID, torch_dtype=dtype).to(device)
+        # load from baked path, offline
+        _pipe = SDXLImg2ImgPipeline.from_pretrained(
+            "/opt/model/sdxl",
+            torch_dtype=dtype,
+            local_files_only=True
+        ).to(device)
         try:
             _pipe.enable_xformers_memory_efficient_attention()
         except Exception:
             pass
-        # IP-Adapter
+
+        # Load IP-Adapter from baked path
         try:
             if not IP_ADAPTER_FACEID:
-                _pipe.load_ip_adapter(IP_ADAPTER_REPO, subfolder="sdxl_models", weight_name=IP_ADAPTER_WEIGHT)
+                _pipe.load_ip_adapter(
+                    "/opt/ipadapter", subfolder="sdxl_models", weight_name="ip-adapter_sdxl.bin"
+                )
             else:
-                _pipe.load_ip_adapter("h94/IP-Adapter-FaceID", subfolder=None,
-                                      weight_name="ip-adapter-faceid_sdxl.bin", image_encoder_folder=None)
+                # if you later bake faceid weights, point to that local dir
+                _pipe.load_ip_adapter(
+                    "h94/IP-Adapter-FaceID", subfolder=None,
+                    weight_name="ip-adapter-faceid_sdxl.bin",
+                    image_encoder_folder=None
+                )
         except Exception:
             pass
-        # Optional LoRA
+
         if LORA_REPO:
             kwargs = {"weight_name": LORA_WEIGHT_NAME} if LORA_WEIGHT_NAME else {}
             try:
                 _pipe.load_lora_weights(LORA_REPO, **kwargs)
             except Exception:
                 pass
+
         _warm_started = True
         return _pipe
+
+     
+ 
 
 def to_png_bytes(img: Image.Image) -> bytes:
     buf = io.BytesIO(); img.save(buf, format="PNG"); return buf.getvalue()

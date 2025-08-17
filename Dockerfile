@@ -37,6 +37,37 @@ import torch.backends.cuda as cb
 print("flash_attn_flag:", hasattr(cb, "is_flash_attention_available"))
 PY
 
+# ---- local HF caches (no net at runtime)
+ENV HF_HOME=/opt/hf-cache \
+    TRANSFORMERS_CACHE=/opt/hf-cache \
+    HUGGINGFACE_HUB_CACHE=/opt/hf-cache \
+    HF_HUB_ENABLE_HF_TRANSFER=0
+
+# ---- pre-download SDXL base and IP-Adapter into the image
+RUN python - <<'PY'
+from diffusers import StableDiffusionXLImg2ImgPipeline as P
+from huggingface_hub import snapshot_download
+import os, shutil
+
+os.makedirs("/opt/model", exist_ok=True)
+os.makedirs("/opt/ipadapter", exist_ok=True)
+
+# 1) SDXL base pipeline (weights+configs) → /opt/model/sdxl
+pipe = P.from_pretrained("stabilityai/stable-diffusion-xl-base-1.0")
+pipe.save_pretrained("/opt/model/sdxl")
+del pipe
+
+# 2) IP-Adapter SDXL bin → /opt/ipadapter/sdxl_models/ip-adapter_sdxl.bin
+snapshot_download(
+    repo_id="h94/IP-Adapter",
+    allow_patterns=["sdxl_models/ip-adapter_sdxl.bin"],
+    local_dir="/opt/ipadapter",
+    local_dir_use_symlinks=False
+)
+PY
+
+# readability at runtime
+RUN chmod -R a+rX /opt/model /opt/ipadapter /opt/hf-cache
 
 
 
