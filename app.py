@@ -94,8 +94,10 @@ async def invocations(
     ip_adapter_scale: float = Form(0.8),
     lora_scale: float = Form(0.9),
     return_base64: bool = Form(False),
-    out_size: int = Form(1024),
+    out_size: int = Form(512),   # ✅ default now 512
 ):
+    # ✅ clamp size
+    out_size = max(256, min(out_size, 768))  # safe range 256–768
     raw = await image.read()
     init = Image.open(io.BytesIO(raw)).convert("RGB")
     pipe = get_pipe()
@@ -105,8 +107,9 @@ async def invocations(
         prompt=prompt, negative_prompt=negative_prompt, image=init,
         strength=float(strength), guidance_scale=float(guidance_scale),
         num_inference_steps=int(steps), generator=generator,
-        height=int(out_size), width=int(out_size),
+        height=out_size, width=out_size,
     )
+
     if use_ip_adapter:
         try:
             call_kwargs["ip_adapter_image"] = init
@@ -121,3 +124,4 @@ async def invocations(
     if return_base64:
         return {"image_base64": base64.b64encode(png).decode("utf-8"), "format": "PNG"}
     return Response(content=png, media_type="image/png")
+
